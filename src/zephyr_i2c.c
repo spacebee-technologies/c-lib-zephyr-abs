@@ -34,10 +34,10 @@ static void ZephyrI2c_initializeInterface(ZephyrI2c *self) {
 //******************************************************************************
 // Public methods
 //******************************************************************************
-uint8_t ZephyrI2c_new(ZephyrI2c *self) {
+uint8_t ZephyrI2c_new(ZephyrI2c *self, const struct device *dev) {
   ZephyrI2c_initializeInterface(self);
 
-  self->i2cDev = DEVICE_DT_GET(DT_ALIAS(i2c_0));
+  self->i2cDev = dev;
   self->i2cCfg = I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_CONTROLLER;
 
   if (!device_is_ready(self->i2cDev)) {
