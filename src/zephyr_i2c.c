@@ -15,6 +15,12 @@ static uint8_t ZephyrI2c_readMessage(void *self, uint8_t *rxBuff, size_t bufferS
   return i2c_read(_self->i2cDev, rxBuff, bufferSize, address);
 }
 
+static uint8_t ZephyrI2c_writeRead(void *self, uint16_t address, const uint8_t *txBuff,
+                                   size_t txSize, uint8_t *rxBuff, size_t rxSize) {
+  ZephyrI2c *_self = (ZephyrI2c *)self;
+  return i2c_write_read(_self->i2cDev, address, txBuff, txSize, rxBuff, rxSize);
+}
+
 //******************************************************************************
 // Private methods
 //******************************************************************************
@@ -22,15 +28,16 @@ static void ZephyrI2c_initializeInterface(ZephyrI2c *self) {
   self->i2cInterfaceView.instance = self;
   self->i2cInterfaceView.sendMessage = ZephyrI2c_sendMessage;
   self->i2cInterfaceView.readMessage = ZephyrI2c_readMessage;
+  self->i2cInterfaceView.writeRead = ZephyrI2c_writeRead;
 }
 
 //******************************************************************************
 // Public methods
 //******************************************************************************
-uint8_t ZephyrI2c_new(ZephyrI2c *self) {
+uint8_t ZephyrI2c_new(ZephyrI2c *self, const struct device *dev) {
   ZephyrI2c_initializeInterface(self);
 
-  self->i2cDev = DEVICE_DT_GET(DT_ALIAS(i2c_0));
+  self->i2cDev = dev;
   self->i2cCfg = I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_CONTROLLER;
 
   if (!device_is_ready(self->i2cDev)) {
