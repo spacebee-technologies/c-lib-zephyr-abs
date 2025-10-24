@@ -19,7 +19,7 @@ typedef struct ZephyrI2c {
  * @param self Uninitialized instance
  * @return uint8_t 0 on success, 1 if error
  */
-uint8_t ZephyrI2c_new(ZephyrI2c *self);
+uint8_t ZephyrI2c_new(ZephyrI2c *self, const struct device *dev);
 
 /**
  * @brief View of Zephyr I2C handler as an I2C interface
