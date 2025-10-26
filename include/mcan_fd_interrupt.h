@@ -32,7 +32,7 @@ typedef struct McanFdInterrupt {
   struct can_frame frame;
 } McanFdInterrupt;
 
-void McanFdInterrupt_new(McanFdInterrupt *self);
+void McanFdInterrupt_new(McanFdInterrupt *self, const struct device *dev);
 bool McanFdInterrupt_receive(McanFdInterrupt *self, uint32_t *rxMessageId, uint8_t *rxMessage, uint8_t *rxMessageLength);
 void McanFdInterrupt_configure(McanFdInterrupt *self);
 bool McanFdInterrupt_send(McanFdInterrupt *self, uint32_t messageId, uint8_t *message, uint8_t messageLength, MCAN_MODE mcanMode);

@@ -64,13 +64,13 @@ void tx_irq_callback(const struct device *dev, int error, void *user_data) {
   }
 }
 
-void McanFdInterrupt_new(McanFdInterrupt *self) {
+void McanFdInterrupt_new(McanFdInterrupt *self, const struct device *dev) {
   self->xferContext = 0;
   self->state = APP_STATE_MCAN_USER_INPUT;
   self->rxMessageId = 0;
   memset(self->rxMessage, 0, 64);
   self->rxMessageLength = 0;
-  self->canDev = DEVICE_DT_GET(DT_CHOSEN(zephyr_canbus));
+  self->canDev = dev;
   self->frame.flags = CAN_FRAME_IDE;
 }
 
