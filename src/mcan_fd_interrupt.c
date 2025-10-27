@@ -71,7 +71,7 @@ void McanFdInterrupt_new(McanFdInterrupt *self, const struct device *dev) {
   memset(self->rxMessage, 0, 64);
   self->rxMessageLength = 0;
   self->canDev = dev;
-  self->frame.flags = CAN_FRAME_IDE;
+  self->frame.flags = 0;
 }
 
 /*========================================================================
@@ -163,17 +163,13 @@ void McanFdInterrupt_configure(McanFdInterrupt *self) {
   ========================================================================*/
 bool McanFdInterrupt_send(McanFdInterrupt *self, uint32_t messageId, uint8_t *message, uint8_t messageLength, MCAN_MODE mcanMode) {
   if (self->state == APP_STATE_MCAN_USER_INPUT) {
-    if (mcanMode==MCAN_MODE_FD_EXTENDED || mcanMode==MCAN_MODE_EXTENDED) {  // Si es mensaje  es id extendido
-      self->frame.flags|=CAN_FRAME_IDE;
-    }
 
-    if (mcanMode==MCAN_MODE_NORMAL) {  // Si el mensaje es id normal
-      self->frame.flags=0;
+    self->frame.flags = 0;
+    if (mcanMode == MCAN_MODE_FD_STANDARD || mcanMode == MCAN_MODE_FD_EXTENDED) {
+      self->frame.flags |= CAN_FRAME_FDF;  // TODO: Check if we can support also BRS
     }
-
-    if (mcanMode==MCAN_MODE_FD_STANDARD || mcanMode==MCAN_MODE_FD_EXTENDED) {  // Si es mensaje es FD
-      self->frame.flags = 0;
-      self->frame.flags |= CAN_FRAME_FDF;
+    if (mcanMode == MCAN_MODE_FD_EXTENDED || mcanMode == MCAN_MODE_EXTENDED) {
+      self->frame.flags |= CAN_FRAME_IDE;
     }
 
     self->frame.id = messageId;
