@@ -33,7 +33,7 @@ void rx_irq_callback(const struct device *dev, struct can_frame *frame, void *us
   self->rxMessageLength = can_dlc_to_bytes(frame->dlc);  // Obtengo el tamaño del mensaje can recibido
   self->rxMessageId = frame->id;  // Obtengo el id del mensaje can recibido
 
-  LOG_DEBUG("New received CAN message: ID = 0x%x, Length = 0x%x", (unsigned int)self->rxMessageLength, (unsigned int)self->rxMessageLength);
+  LOG_DEBUG("New received CAN message: ID = 0x%x, Length = 0x%x", (unsigned int)self->rxMessageId, (unsigned int)self->rxMessageLength);
 
   for (uint8_t loop_count = 0; loop_count < self->rxMessageLength; loop_count++){  // Obtengo mensaje can recibido
     self->rxMessage[loop_count] = frame->data[loop_count];
