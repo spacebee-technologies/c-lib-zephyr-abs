@@ -40,7 +40,7 @@ void rx_irq_callback(const struct device *dev, struct can_frame *frame, void *us
     LOG_DEBUG("DATA[%u]: 0x%x ", loop_count, self->rxMessage[loop_count]);
   }
 
-  self->xferContext  = APP_STATE_MCAN_RECEIVE;  // Indico que la operacion realizada es recepcion
+  self->xferContext = APP_STATE_MCAN_RECEIVE;  // Indico que la operacion realizada es recepcion
   self->state = APP_STATE_MCAN_XFER_SUCCESSFUL;  // Indico que se finalizo la recepcion correctamente
 }
 
@@ -84,7 +84,7 @@ void McanFdInterrupt_new(McanFdInterrupt *self, const struct device *dev) {
   Retorna: dato bool indicando si se pudo transmitir el mensaje true o false.
   ========================================================================*/
 bool McanFdInterrupt_receive(McanFdInterrupt *self, uint32_t *rxMessageId, uint8_t *rxMessage, uint8_t *rxMessageLength) {
-  if (self->state == APP_STATE_MCAN_XFER_SUCCESSFUL && (APP_STATES)self->xferContext == APP_STATE_MCAN_RECEIVE) {
+  if (self->state == APP_STATE_MCAN_XFER_SUCCESSFUL && self->xferContext == APP_STATE_MCAN_RECEIVE) {
     k_sched_lock();  // Seccion critica para evitar que se ejecute cambio de contexto alterando el proceso de guardado de la variable
     *rxMessageId = self->rxMessageId;
     for (uint8_t i=0; i<self->rxMessageLength; i++) {
@@ -215,14 +215,14 @@ uint8_t McanFdInterrupt_getState(McanFdInterrupt *self) {
       if ((APP_STATES)self->xferContext == APP_STATE_MCAN_RECEIVE)  // Si el contexto era de recepcion
       {
         resultado = 1;  // Se recibio correctamente
-      } else if ((APP_STATES)self->xferContext == APP_STATE_MCAN_TRANSMIT) {
+      } else if (self->xferContext == APP_STATE_MCAN_TRANSMIT) {
         resultado = 2;  // Se transmitio correctamente
       }
       break;
     }
     case APP_STATE_MCAN_XFER_ERROR:  // Si la transmicion o recepcion fue erronea
     {
-      if ((APP_STATES)self->xferContext == APP_STATE_MCAN_RECEIVE)  // Si el contecto era de recepcion
+      if (self->xferContext == APP_STATE_MCAN_RECEIVE)  // Si el contecto era de recepcion
       {
         resultado = 3;  // Error al recibir mensaje
       } else {

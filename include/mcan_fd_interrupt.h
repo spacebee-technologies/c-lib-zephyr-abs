@@ -23,7 +23,7 @@ typedef enum {
 } APP_STATES;
 
 typedef struct McanFdInterrupt {
-  uint32_t xferContext;
+  APP_STATES xferContext;
   APP_STATES state;
   uint32_t rxMessageId;
   uint8_t rxMessage[64];
