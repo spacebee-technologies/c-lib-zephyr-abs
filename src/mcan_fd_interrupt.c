@@ -111,6 +111,8 @@ void McanFdInterrupt_configure(McanFdInterrupt *self) {
     LOG_DEBUG("CAN: Device %s not ready", self->canDev->name);
   }
 
+  can_stop(self->canDev);
+
   can_set_bitrate(self->canDev, 0x7A120);  // Configuro el bitrate de mensaje normal
   can_set_bitrate_data(self->canDev, 0x1E8480);  // Caonfiguro el bitrate del mensaje FD
   ret = can_set_mode(self->canDev, CAN_MODE_FD);  // Activo modo can en modo mensaje normal
