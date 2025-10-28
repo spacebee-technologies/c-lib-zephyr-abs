@@ -212,7 +212,7 @@ uint8_t McanFdInterrupt_getState(McanFdInterrupt *self) {
   switch (self->state) {
     case APP_STATE_MCAN_XFER_SUCCESSFUL:  // Si la transmicion o recepcion se realizo con exito
     {
-      if ((APP_STATES)self->xferContext == APP_STATE_MCAN_RECEIVE)  // Si el contexto era de recepcion
+      if (self->xferContext == APP_STATE_MCAN_RECEIVE)  // Si el contexto era de recepcion
       {
         resultado = 1;  // Se recibio correctamente
       } else if (self->xferContext == APP_STATE_MCAN_TRANSMIT) {
