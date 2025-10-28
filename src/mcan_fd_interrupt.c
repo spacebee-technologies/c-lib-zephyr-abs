@@ -65,7 +65,7 @@ void tx_irq_callback(const struct device *dev, int error, void *user_data) {
 }
 
 void McanFdInterrupt_new(McanFdInterrupt *self, const struct device *dev) {
-  self->xferContext = 0;
+  self->xferContext = APP_STATE_MCAN_RECEIVE;
   self->state = APP_STATE_MCAN_USER_INPUT;
   self->rxMessageId = 0;
   memset(self->rxMessage, 0, 64);
@@ -208,6 +208,16 @@ bool McanFdInterrupt_send(McanFdInterrupt *self, uint32_t messageId, uint8_t *me
                         4 = Error al transmitir un dato por can bus luego de llamar a la funcion McanFdInterrupt_send()
   ========================================================================*/
 uint8_t McanFdInterrupt_getState(McanFdInterrupt *self) {
+
+  switch (self->state) {
+    case APP_STATE_MCAN_XFER_SUCCESSFUL:
+        return (self->xferContext == APP_STATE_MCAN_RECEIVE) ? 1 : 2;
+    case APP_STATE_MCAN_XFER_ERROR:
+        return (self->xferContext == APP_STATE_MCAN_RECEIVE) ? 3 : 4;
+    default:
+        return 0;
+  }
+
   uint8_t resultado = 0;
   switch (self->state) {
     case APP_STATE_MCAN_XFER_SUCCESSFUL:  // Si la transmicion o recepcion se realizo con exito
