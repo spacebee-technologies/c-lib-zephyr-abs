@@ -40,8 +40,10 @@ void rx_irq_callback(const struct device *dev, struct can_frame *frame, void *us
     LOG_DEBUG("DATA[%u]: 0x%x ", loop_count, self->rxMessage[loop_count]);
   }
 
+  k_sched_lock();
   self->xferContext = APP_STATE_MCAN_RECEIVE;  // Indico que la operacion realizada es recepcion
   self->state = APP_STATE_MCAN_XFER_SUCCESSFUL;  // Indico que se finalizo la recepcion correctamente
+  k_sched_unlock();
 }
 
 /*========================================================================
@@ -56,12 +58,14 @@ void rx_irq_callback(const struct device *dev, struct can_frame *frame, void *us
 void tx_irq_callback(const struct device *dev, int error, void *user_data) {
   McanFdInterrupt *self = (McanFdInterrupt *)user_data;
 
+  k_sched_lock();
   if (error != 0) {  // Si existio un error al enviar el mensaje por can
     self->state = APP_STATE_MCAN_XFER_ERROR;  // Cambio estado a mensaje transmitido erroneamente
     LOG_DEBUG("Error sending CAN");
   } else {  // Si se transmitio correctamente
     self->state = APP_STATE_MCAN_XFER_SUCCESSFUL;  // Cambio estado a transmitido correctamente
   }
+  k_sched_unlock();
 }
 
 void McanFdInterrupt_new(McanFdInterrupt *self, const struct device *dev) {
@@ -188,8 +192,10 @@ bool McanFdInterrupt_send(McanFdInterrupt *self, uint32_t messageId, uint8_t *me
     if (res != 0) {
       return false;  // Retorno falso si no se pudo enviar
     }
+    k_sched_lock();
     self->state = APP_STATE_MCAN_TRANSMIT;
     self->xferContext = APP_STATE_MCAN_TRANSMIT;
+    k_sched_unlock();
     return true;
   } else {
     return false;  // Retorno falso si no se pudo enviar
