@@ -14,12 +14,12 @@ typedef enum {
 } MCAN_MODE;
 
 typedef enum {
-  APP_STATE_MCAN_RECEIVE,          // Estado Recibiendo mensaje
-  APP_STATE_MCAN_TRANSMIT,         // Estado transmitiendo mensaje
-  APP_STATE_MCAN_IDLE,             // Estado mcan inactivo
-  APP_STATE_MCAN_XFER_SUCCESSFUL,  // Estado mensaje recibido o transmitido correctamente
-  APP_STATE_MCAN_XFER_ERROR,       // Estado mensaje recibido o transmitido erroneamente
-  APP_STATE_MCAN_USER_INPUT        // Esperando al usuario para enviar o recibir mensaje
+  APP_STATE_MCAN_RECEIVE,
+  APP_STATE_MCAN_TRANSMIT,
+  APP_STATE_MCAN_IDLE,
+  APP_STATE_MCAN_XFER_SUCCESSFUL,
+  APP_STATE_MCAN_XFER_ERROR,
+  APP_STATE_MCAN_USER_INPUT,
 } APP_STATES;
 
 typedef struct McanFdInterrupt {
@@ -30,9 +30,10 @@ typedef struct McanFdInterrupt {
   uint8_t rxMessageLength;
   const struct device *canDev;
   struct can_frame frame;
+  can_mode_t mode;
 } McanFdInterrupt;
 
-void McanFdInterrupt_new(McanFdInterrupt *self, const struct device *dev);
+void McanFdInterrupt_new(McanFdInterrupt *self, const struct device *dev, can_mode_t mode);
 bool McanFdInterrupt_receive(McanFdInterrupt *self, uint32_t *rxMessageId, uint8_t *rxMessage, uint8_t *rxMessageLength);
 void McanFdInterrupt_configure(McanFdInterrupt *self);
 bool McanFdInterrupt_send(McanFdInterrupt *self, uint32_t messageId, uint8_t *message, uint8_t messageLength, MCAN_MODE mcanMode);

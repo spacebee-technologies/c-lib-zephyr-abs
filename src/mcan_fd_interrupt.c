@@ -48,7 +48,7 @@ void tx_irq_callback(const struct device *dev, int error, void *userData) {
   k_sched_unlock();
 }
 
-void McanFdInterrupt_new(McanFdInterrupt *self, const struct device *dev) {
+void McanFdInterrupt_new(McanFdInterrupt *self, const struct device *dev, can_mode_t mode) {
   self->xferContext = APP_STATE_MCAN_RECEIVE;
   self->state = APP_STATE_MCAN_USER_INPUT;
   self->rxMessageId = 0;
@@ -56,6 +56,7 @@ void McanFdInterrupt_new(McanFdInterrupt *self, const struct device *dev) {
   self->rxMessageLength = 0;
   self->canDev = dev;
   self->frame.flags = 0;
+  self->mode = mode;
 }
 
 /**
@@ -100,7 +101,7 @@ void McanFdInterrupt_configure(McanFdInterrupt *self) {
   can_set_bitrate(self->canDev, 500000);  // 500000 bps nominal bitrate
   can_set_bitrate_data(self->canDev, 2000000);  // 2 Mbps data bitrate for FD
 
-  ret = can_set_mode(self->canDev, CAN_MODE_FD);
+  ret = can_set_mode(self->canDev, self->mode);
   if (ret != 0) {
     LOG_DEBUG("Error setting CAN mode");
   }
