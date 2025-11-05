@@ -39,5 +39,6 @@ void McanFdInterrupt_configure(McanFdInterrupt *self);
 bool McanFdInterrupt_send(McanFdInterrupt *self, uint32_t messageId, uint8_t *message, uint8_t messageLength, MCAN_MODE mcanMode);
 uint8_t McanFdInterrupt_getState(McanFdInterrupt *self);
 void McanFdInterrupt_enable(McanFdInterrupt *self);
+bool McanFdInterrupt_addFilter(McanFdInterrupt *self, uint32_t id, uint32_t mask);
 
 #endif  // MCAN_FD_INTERRUPT_H_

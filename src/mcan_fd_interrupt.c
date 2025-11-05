@@ -111,32 +111,6 @@ void McanFdInterrupt_configure(McanFdInterrupt *self) {
     LOG_DEBUG("Error starting CAN controller");
   }
 
-  // Filter for SDO requests (0x600 + node ID)
-  const struct can_filter sdoRequests = {
-    .id = 0x600,
-    .mask = 0x780,  // matches 0x600–0x67F
-    .flags = 0,
-  };
-
-  ret = can_add_rx_filter(self->canDev, &rx_irq_callback, self, &sdoRequests);
-
-  if (ret == -ENOSPC) {
-    LOG_DEBUG("Error, no filter available!");
-  }
-
-  // Filter for SDO responses (0x580 + node ID)
-  const struct can_filter sdoResponses = {
-    .id = 0x580,
-    .mask = 0x780,  // matches 0x580–0x5FF
-    .flags = 0,
-  };
-
-  ret = can_add_rx_filter(self->canDev, &rx_irq_callback, self, &sdoResponses);
-
-  if (ret == -ENOSPC) {
-    LOG_DEBUG("Error, no filter available!");
-  }
-
   LOG_DEBUG("Finished CAN configuration");
 }
 
@@ -214,4 +188,29 @@ uint8_t McanFdInterrupt_getState(McanFdInterrupt *self) {
  */
 void McanFdInterrupt_enable(McanFdInterrupt *self) {
   self->state = APP_STATE_MCAN_USER_INPUT;
+}
+
+/**
+ * @brief Add a CAN filter to the MCAN FD peripheral
+ *
+ * @param self Initialized McanFdInterrupt instance
+ * @param id ID of the CAN filter
+ * @param mask Mask for the CAN filter
+ * @return true if filter was added successfully
+ */
+bool McanFdInterrupt_addFilter(McanFdInterrupt *self, uint32_t id, uint32_t mask) {
+  struct can_filter filter = {
+    .id = id,
+    .mask = mask,
+    .flags = 0,
+  };
+
+  int ret = can_add_rx_filter(self->canDev, rx_irq_callback, self, &filter);
+
+  if (ret == -ENOSPC || ret == -ENOTSUP || ret == -EINVAL) {
+    LOG_DEBUG("Failed to add filter (ID=0x%x MASK=0x%x): %d", id, mask, ret);
+    return false;
+  }
+
+  return true;
 }
