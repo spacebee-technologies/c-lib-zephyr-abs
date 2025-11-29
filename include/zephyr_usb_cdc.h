@@ -15,7 +15,7 @@ typedef struct ZephyrUsbCdc {
  *
  * @param self Uninitialized USB CDC structure
  */
-void ZephyrUsbCdc_create(ZephyrUsbCdc *self);
+void ZephyrUsbCdc_create(ZephyrUsbCdc *self, const struct device *usbDev);
 
 /**
  * @brief Returns a USB CDC view as a communication interface

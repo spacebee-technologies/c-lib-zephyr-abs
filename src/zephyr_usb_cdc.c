@@ -40,13 +40,13 @@ static uint8_t _receive(void *self, uint8_t *buffer, size_t bufferSize, size_t *
 //******************************************************************************
 // Public methods
 //******************************************************************************
-void ZephyrUsbCdc_create(ZephyrUsbCdc *self) {
+void ZephyrUsbCdc_create(ZephyrUsbCdc *self, const struct device *usbDev) {
   // Initialize interface view
   self->communicationInterfaceView.instance = self;
   self->communicationInterfaceView.send = _send;
   self->communicationInterfaceView.receive = _receive;
 
-  self->usbDev = DEVICE_DT_GET(DT_NODELABEL(cdc_acm_0));
+  self->usbDev = usbDev;
 
   // Initialize USB
   int ret = usb_enable(NULL);
