@@ -56,7 +56,7 @@ static void ZephyrUart_serialCallback(const struct device *dev, void *uart) {
       _uart->rx_buf[_uart->rx_buf_pos] = '\0';
 
       // If queue is full, message is silently dropped
-      k_msgq_put(&_uart->msgq, &_uart->rx_buf, K_NO_WAIT);
+      k_msgq_put(&_uart->msgq, _uart->rx_buf, K_NO_WAIT);
 
       // Reset the buffer (it was copied to the msgq)
       _uart->rx_buf_pos = 0;
