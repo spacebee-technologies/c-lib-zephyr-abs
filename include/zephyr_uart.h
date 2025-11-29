@@ -18,8 +18,7 @@ typedef struct ZephyrUartMessage {
 typedef struct ZephyrUart {
   CommunicationInterface communicationInterfaceView;
   const struct device *dev;
-  char rx_buf[MSG_SIZE];
-  int rx_buf_pos;
+  ZephyrUartMessage_t rx_message;
   struct k_msgq msgq;
   uint8_t msgq_buffer[MSGQ_ITEMS * sizeof(ZephyrUartMessage_t)];
   SemaphoreInterface *sem;

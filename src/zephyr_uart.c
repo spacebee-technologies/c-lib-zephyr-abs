@@ -52,21 +52,23 @@ static void ZephyrUart_serialCallback(const struct device *dev, void *uart) {
 
   // Read until FIFO empty
   while (uart_fifo_read(dev, &c, 1) == 1) {
-    if ((c == '\n' || c == '\r') && _uart->rx_buf_pos > 0) {
+    if ((c == '\n' || c == '\r') && _uart->rx_message.len > 0) {
       // Terminate string
-      _uart->rx_buf[_uart->rx_buf_pos] = '\0';
+      _uart->rx_message.data[_uart->rx_message.len] = '\0';
 
       ZephyrUartMessage_t msg;
-      msg.len = _uart->rx_buf_pos;
-      memcpy(msg.data, _uart->rx_buf, _uart->rx_buf_pos);
+
+      // Copy current rx_message into local
+      msg.len = _uart->rx_message.len;
+      memcpy(msg.data, _uart->rx_message.data, msg.len);
 
       // If queue is full, message is silently dropped
       k_msgq_put(&_uart->msgq, &msg, K_NO_WAIT);
 
       // Reset the buffer (it was copied to the msgq)
-      _uart->rx_buf_pos = 0;
-    } else if (_uart->rx_buf_pos < (sizeof(_uart->rx_buf) - 1)) {
-      _uart->rx_buf[_uart->rx_buf_pos++] = c;
+      _uart->rx_message.len = 0;
+    } else if (_uart->rx_message.len < (sizeof(_uart->rx_message.data) - 1)) {
+      _uart->rx_message.data[_uart->rx_message.len++] = c;
     }
     // Else: characters beyond buffer size are dropped
   }
@@ -84,7 +86,7 @@ static void ZephyrUart_initializeInterface(ZephyrUart *self) {
 uint8_t ZephyrUart_create(ZephyrUart *self, const struct device *dev, SemaphoreInterface *sem) {
   ZephyrUart_initializeInterface(self);
   self->dev = dev;
-  self->rx_buf_pos = 0;
+  self->rx_message.len = 0;
   k_msgq_init(&self->msgq, self->msgq_buffer, sizeof(ZephyrUartMessage_t), MSGQ_ITEMS);
   self->sem = sem;
   return 0;
