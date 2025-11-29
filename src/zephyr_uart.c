@@ -22,11 +22,12 @@ static uint8_t ZephyrUart_send(void *self, const uint8_t *data, size_t length) {
 static uint8_t ZephyrUart_receive(void *self, uint8_t *buffer, size_t bufferSize, size_t *receivedSize) {
   ZephyrUart *_self = (ZephyrUart *)self;
   if (bufferSize < MSG_SIZE) { return 1; }
-  char message[MSG_SIZE];
+  ZephyrUartMessage_t message;
   int queueStatus = k_msgq_get(&_self->msgq, &message, K_NO_WAIT);
   if (queueStatus == 0) {
-    *receivedSize = strlen(message);
-    memcpy(buffer, message, *receivedSize);
+    if (message.len > bufferSize) { return 1; }
+    *receivedSize = message.len;
+    memcpy(buffer, message.data, *receivedSize);
     return 0;
   } else {
     return 1;
@@ -55,8 +56,12 @@ static void ZephyrUart_serialCallback(const struct device *dev, void *uart) {
       // Terminate string
       _uart->rx_buf[_uart->rx_buf_pos] = '\0';
 
+      ZephyrUartMessage_t msg;
+      msg.len = _uart->rx_buf_pos;
+      memcpy(msg.data, _uart->rx_buf, _uart->rx_buf_pos);
+
       // If queue is full, message is silently dropped
-      k_msgq_put(&_uart->msgq, _uart->rx_buf, K_NO_WAIT);
+      k_msgq_put(&_uart->msgq, &msg, K_NO_WAIT);
 
       // Reset the buffer (it was copied to the msgq)
       _uart->rx_buf_pos = 0;
@@ -80,7 +85,7 @@ uint8_t ZephyrUart_create(ZephyrUart *self, const struct device *dev, SemaphoreI
   ZephyrUart_initializeInterface(self);
   self->dev = dev;
   self->rx_buf_pos = 0;
-  k_msgq_init(&self->msgq, self->msgq_buffer, MSG_SIZE, MSGQ_ITEMS);
+  k_msgq_init(&self->msgq, self->msgq_buffer, sizeof(ZephyrUartMessage_t), MSGQ_ITEMS);
   self->sem = sem;
   return 0;
 }
