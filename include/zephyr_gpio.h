@@ -5,12 +5,6 @@
 
 #include "gpio_interface.h"
 
-typedef enum ZephyrGpioConfig {
-  ZEPHYR_GPIO_CONFIG_OUTPUT,
-  ZEPHYR_GPIO_CONFIG_INPUT_PULL_UP,
-  ZEPHYR_GPIO_CONFIG_INPUT_PULL_DOWN,
-} ZephyrGpioConfig_t;
-
 typedef struct ZephyrGpio {
   GpioInterface gpioInterfaceView;
   const struct gpio_dt_spec *gpio;
