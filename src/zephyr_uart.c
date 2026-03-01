@@ -22,11 +22,12 @@ static uint8_t ZephyrUart_send(void *self, const uint8_t *data, size_t length) {
 static uint8_t ZephyrUart_receive(void *self, uint8_t *buffer, size_t bufferSize, size_t *receivedSize) {
   ZephyrUart *_self = (ZephyrUart *)self;
   if (bufferSize < MSG_SIZE) { return 1; }
-  char message[MSG_SIZE];
+  ZephyrUartMessage_t message;
   int queueStatus = k_msgq_get(&_self->msgq, &message, K_NO_WAIT);
   if (queueStatus == 0) {
-    *receivedSize = strlen(message);
-    memcpy(buffer, message, *receivedSize);
+    if (message.len > bufferSize) { return 1; }
+    *receivedSize = message.len;
+    memcpy(buffer, message.data, *receivedSize);
     return 0;
   } else {
     return 1;
@@ -51,17 +52,23 @@ static void ZephyrUart_serialCallback(const struct device *dev, void *uart) {
 
   // Read until FIFO empty
   while (uart_fifo_read(dev, &c, 1) == 1) {
-    if ((c == '\n' || c == '\r') && _uart->rx_buf_pos > 0) {
+    if ((c == '\n' || c == '\r') && _uart->rx_message.len > 0) {
       // Terminate string
-      _uart->rx_buf[_uart->rx_buf_pos] = '\0';
+      _uart->rx_message.data[_uart->rx_message.len] = '\0';
+
+      ZephyrUartMessage_t msg;
+
+      // Copy current rx_message into local
+      msg.len = _uart->rx_message.len;
+      memcpy(msg.data, _uart->rx_message.data, msg.len);
 
       // If queue is full, message is silently dropped
-      k_msgq_put(&_uart->msgq, &_uart->rx_buf, K_NO_WAIT);
+      k_msgq_put(&_uart->msgq, &msg, K_NO_WAIT);
 
       // Reset the buffer (it was copied to the msgq)
-      _uart->rx_buf_pos = 0;
-    } else if (_uart->rx_buf_pos < (sizeof(_uart->rx_buf) - 1)) {
-      _uart->rx_buf[_uart->rx_buf_pos++] = c;
+      _uart->rx_message.len = 0;
+    } else if (_uart->rx_message.len < (sizeof(_uart->rx_message.data) - 1)) {
+      _uart->rx_message.data[_uart->rx_message.len++] = c;
     }
     // Else: characters beyond buffer size are dropped
   }
@@ -79,8 +86,8 @@ static void ZephyrUart_initializeInterface(ZephyrUart *self) {
 uint8_t ZephyrUart_create(ZephyrUart *self, const struct device *dev, SemaphoreInterface *sem) {
   ZephyrUart_initializeInterface(self);
   self->dev = dev;
-  self->rx_buf_pos = 0;
-  k_msgq_init(&self->msgq, self->msgq_buffer, MSG_SIZE, MSGQ_ITEMS);
+  self->rx_message.len = 0;
+  k_msgq_init(&self->msgq, self->msgq_buffer, sizeof(ZephyrUartMessage_t), MSGQ_ITEMS);
   self->sem = sem;
   return 0;
 }
