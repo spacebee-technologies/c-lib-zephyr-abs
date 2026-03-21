@@ -5,7 +5,7 @@
 //******************************************************************************
 static bool ZephyrSemaphore_take(void *self) {
   ZephyrSemaphore *_self = (ZephyrSemaphore *)self;
-  if (k_sem_take(&_self->semaphore, K_FOREVER) == 0) { return true; }
+  if (k_sem_take(&_self->semaphore, K_MSEC(10)) == 0) { return true; }
   return false;
 }
 
