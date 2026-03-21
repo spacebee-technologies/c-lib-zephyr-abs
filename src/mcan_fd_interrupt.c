@@ -144,7 +144,7 @@ bool McanFdInterrupt_send(McanFdInterrupt *self, uint32_t messageId, uint8_t *me
 
     self->frame.dlc = can_bytes_to_dlc(messageLength);
 
-    uint8_t res = can_send(self->canDev, &self->frame, K_FOREVER, tx_irq_callback, self);
+    uint8_t res = can_send(self->canDev, &self->frame, K_MSEC(10), tx_irq_callback, self);
     if (res != 0) {
       return false;
     }
